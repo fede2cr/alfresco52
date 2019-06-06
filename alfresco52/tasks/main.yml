@@ -1,8 +1,10 @@
 ---
 # tasks file for alfresco52
-    - fail:
-        msg: "La guía solo aplica para Ubuntu Bionic"
-      when: (travisenv != "true") and (ansible_distribution_release != "bionic")
+
+#    - fail:
+#      name: Revisa si estamos en Bionic, excepto en travis (quien no tiene bionic)
+#        msg: "La guía solo aplica para Ubuntu Bionic"
+#      when: (travisenv != "true") and (ansible_distribution_release != "bionic")
     - name: Instala aptitude (requerido por ansible)
       apt:
         name: aptitude
@@ -32,4 +34,20 @@
         - libreoffice
         - imagemagick
         - postgresql
+        - postgresql-client-common
+        - unzip
+      become: yes
+    - name: Agrega usuario para solr
+      user:
+        name: solr
+        state: present
+        create_home: false
+        password_lock: true
+        system: true
+      become: yes
+    - name: Unarchive a file that needs to be downloaded (added in 2.0)
+      unarchive:
+        src: https://artifacts.alfresco.com/nexus/content/repositories/public/org/alfresco/alfresco-pdf-renderer/1.1/alfresco-pdf-renderer-1.1-linux.tgz
+        dest: /usr/local/bin
+        remote_src: yes
       become: yes
