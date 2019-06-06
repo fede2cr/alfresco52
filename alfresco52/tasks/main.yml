@@ -19,3 +19,14 @@
       apt:
         autoremove: yes
       become: yes
+    - name: Instala paquetes adicionales
+      apt:
+        name: "{{ item }}"
+        state: present
+        loop:
+          - openjdk-8-jre
+          - tomcat8
+          - libreoffice
+          - imagemagick
+          - postgresql-server
+      become: yes
