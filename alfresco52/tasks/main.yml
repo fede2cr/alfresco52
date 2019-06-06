@@ -1,5 +1,5 @@
 ---
-# tasks file for alfresco52
+# tasks file for alfresco6.1
 
 #    - fail:
 #      name: Revisa si estamos en Bionic, excepto en travis (quien no tiene bionic)
@@ -51,17 +51,27 @@
         dest: /usr/local/bin
         remote_src: yes
       become: yes
-    # Crear archivo de systemd para solr, reload-daemon, enable y restart
+    - name: Agregar archivo de config para servicio Solr
+      copy:
+        src: files/solr.services
+        dest: /etc/systemd/system/solr.services
+        owner: root
+        mode: 0644
+      become: yes
+    - name: Reinicia systemd luego de cambiar configuración
+      systemd:
+        daemon_reload: yes
+      become: yes
+    # Falta de solr: enable y restart
     - name: Crea directorios para instalación
       file:
         path: "{{ item }}"
         state: directory
         mode: 0755
-        loop:
-          - /srv/alfresco
-          - /srv/solr
+      loop:
+        - /srv/alfresco
+        - /srv/solr
       become: yes
-    # Crear /srv/{alfresco,solr}
     - name: Crea base de datos para Alfresco
       postgresql_db:
         name: alfresco
