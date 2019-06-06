@@ -1,0 +1,14 @@
+dist: xenial
+
+before_install:
+  - sudo apt-get -qq update
+
+install:
+  - sudo apt-get install -qy lxc libvirt-daemon-system python3-pip wireshark-common apache2 acl
+  - sudo pip install ansible
+  - sudo apt-get purge mysql-server*
+
+script:
+  - "ansible -i inventory/hosts.example --list-hosts all"
+  - "ansible-playbook -i inventory/hosts.example --syntax-check alfresco52/*yml"
+  - "ansible-playbook -i inventory/hosts.example -C alfresco52/*yml"

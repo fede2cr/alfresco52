@@ -1,0 +1,5 @@
+---
+- name: Configure Dev Web Server
+  hosts: all
+  roles:
+    - alfresco52
