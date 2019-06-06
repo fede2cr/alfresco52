@@ -1,5 +1,8 @@
 ---
 # tasks file for alfresco52
+    - fail:
+        msg: "La guía solo aplica para Ubuntu Bionic"
+      when: ansible_distribution_release != "bionic"
     - name: Instala aptitude (requerido por ansible)
       apt:
         name: aptitude
@@ -23,10 +26,10 @@
       apt:
         name: "{{ item }}"
         state: present
-        loop:
-          - openjdk-8-jre
-          - tomcat8
-          - libreoffice
-          - imagemagick
-          - postgresql-server
+      loop:
+        - openjdk-8-jre
+        - tomcat8
+        - libreoffice
+        - imagemagick
+        - postgresql-server
       become: yes
