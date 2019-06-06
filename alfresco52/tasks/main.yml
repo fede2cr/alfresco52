@@ -45,9 +45,23 @@
         password_lock: true
         system: true
       become: yes
-    - name: Unarchive a file that needs to be downloaded (added in 2.0)
+    - name: Descarga e instala Alfresco PDF Render para GNU/Linux
       unarchive:
         src: https://artifacts.alfresco.com/nexus/content/repositories/public/org/alfresco/alfresco-pdf-renderer/1.1/alfresco-pdf-renderer-1.1-linux.tgz
         dest: /usr/local/bin
         remote_src: yes
       become: yes
+    # Crear archivo de systemd para solr, reload-daemon, enable y restart
+    - name: Crea directorios para instalación
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0755
+        loop:
+          - /srv/alfresco
+          - /srv/solr
+      become: yes
+    # Crear /srv/{alfresco,solr}
+    - name: Crea base de datos para Alfresco
+      postgresql_db:
+        name: alfresco
