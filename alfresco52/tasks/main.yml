@@ -53,7 +53,7 @@
       become: yes
     - name: Agregar archivo de config para servicio Solr
       copy:
-        src: files/solr.services
+        src: "{{ role_path }}/files/solr.services"
         dest: /etc/systemd/system/solr.services
         owner: root
         mode: 0644
