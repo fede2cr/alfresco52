@@ -36,7 +36,7 @@
         - postgresql
         - postgresql-client-common
         - unzip
-        - python-psycopg2 # Para ansible+postgresql
+        - python3-psycopg2 # Para ansible+postgresql
       become: yes
     - name: Agrega usuario para solr
       user:
