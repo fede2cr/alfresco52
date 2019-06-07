@@ -36,8 +36,15 @@
         - postgresql
         - postgresql-client-common
         - unzip
+        - python3-pip
         - python-psycopg2 # Para ansible+postgresql
         - libpq-dev       # Para ansible+postgresql
+      become: yes
+    - name: Instala psycopg2 para ansible+psql
+      pip:
+        name: psycopg2
+        state: latest
+        executable: pip3
       become: yes
     - name: Agrega usuario para solr
       user:
