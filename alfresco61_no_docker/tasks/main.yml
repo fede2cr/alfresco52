@@ -51,7 +51,7 @@
         dest: /usr/local/bin
         remote_src: yes
       become: yes
-    - name: Agregar archivo de config para servicio Solr
+    - name: Agrega archivo de config para servicio Solr
       copy:
         src: "{{ role_path }}/files/solr.services"
         dest: /etc/systemd/system/solr.services
