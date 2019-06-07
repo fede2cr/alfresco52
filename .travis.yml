@@ -13,3 +13,4 @@ script:
   - "ansible -i inventory/hosts.example --list-hosts all"
   - "ansible-playbook -i inventory/hosts.example --syntax-check *yml"
   - "ansible-playbook -i inventory/hosts.example -C *yml"
+  - "ansible-playbook -i inventory/hosts.example *yml"
