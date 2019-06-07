@@ -40,6 +40,15 @@
         - python-psycopg2 # Para ansible+postgresql
         - libpq-dev       # Para ansible+postgresql
       become: yes
+    - name: Configura servicios
+      service:
+        name: "{{ item }}"
+        enabled: yes
+        state: restarted
+      with_items:
+        - tomcat8
+        - postgresql.service
+      become: yes
     - name: Agrega usuario para solr
       user:
         name: solr
