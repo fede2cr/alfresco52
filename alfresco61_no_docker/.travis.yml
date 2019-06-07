@@ -10,8 +10,6 @@ addons:
   apt:
     packages:
     - python-pip
-    - python-psycopg2
-    - libpq-dev
 
 install:
   # Install ansible
