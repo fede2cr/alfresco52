@@ -1,6 +1,7 @@
 ---
 - name: Configure Dev Web Server
   hosts: all
+  vars:
+    role_path: alfresco61_no_docker/
   roles:
-    - alfresco61_no_docker:
-      role_path: "alfresco61_no_docker/"
+    - alfresco61_no_docker
