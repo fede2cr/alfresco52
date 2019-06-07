@@ -44,7 +44,7 @@
       pip:
         name: psycopg2
         state: latest
-        executable: pip3
+        executable: pip
       become: yes
     - name: Agrega usuario para solr
       user:
