@@ -86,7 +86,6 @@
       become: yes
     - name: Crea usuario de PosgreSQL para Alfresco
       postgresql_user:
-        db: alfresco
         name: alfresco
         password: alfresco # TODO: Manejar con include a ansible vault
         state: present
