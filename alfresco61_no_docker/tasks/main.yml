@@ -56,8 +56,8 @@
       become: yes
     - name: Agrega archivo de config para servicio Solr
       copy:
-        src: "{{ role_path }}/files/solr.services"
-        dest: /etc/systemd/system/solr.services
+        src: "{{ role_path }}/files/solr.service"
+        dest: /etc/systemd/system/solr.service
         owner: root
         mode: 0644
       become: yes
@@ -84,6 +84,13 @@
         - /srv/alfresco
         - /srv/solr
       become: yes
+    - name: Crea usuario de PosgreSQL para Alfresco
+      postgresql_user:
+        db: alfresco
+        name: alfresco
+        password: alfresco # TODO: Manejar con include a ansible vault
+        state: present
     - name: Crea base de datos para Alfresco
       postgresql_db:
         name: alfresco
+        owner: alfresco
