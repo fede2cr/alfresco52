@@ -2,4 +2,4 @@
 - name: Configure Dev Web Server
   hosts: all
   roles:
-    - alfresco52
+    - alfresco61_no_docker
