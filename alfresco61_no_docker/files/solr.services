@@ -5,4 +5,12 @@ Before=multi-user.target graphical.target
 Conflicts=shutdown.target
 Requires=tomcat9.service
 # Ojo: En instalacion de paquetes se solicita tomcat8
-# Archivo parcial
+[Service]
+User=solr
+Type=forking
+Environment=SOLR_INCLUDE=/opt/alfresco-search-services/solr.in.sh
+ExecStart=/opt/alfresco-search-services/solr/bin/solr start -a "-Dcreate.alfresco.defaults=alfresco,archive"
+ExecStop=/opt/alfresco-search-services/solr/bin/solr stop
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target graphical.target
