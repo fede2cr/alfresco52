@@ -35,6 +35,7 @@
         - imagemagick
         - postgresql
         - postgresql-client-common
+        - libpostgresql-jdbc-java
         - unzip
         - python3-pip
         - python-psycopg2 # Para ansible+postgresql
@@ -73,7 +74,7 @@
       with_items:
         - tomcat8
         - postgresql.service
-        - solr
+        #- solr
       become: yes
     - name: Crea directorios para instalación
       file:
@@ -83,6 +84,15 @@
       loop:
         - /srv/alfresco
         - /srv/solr
+        - /var/lib/tomcat8/webapps/shared/classes
+        - /var/lib/tomcat8/webapps/shared/lib
+      become: yes
+    - name: Crea liga para librerías de postgresql en tomcat
+      file:
+        src: /usr/share/java/postgresql.jar
+        dest: /var/lib/tomcat8/webapps/shared/lib/postgresql.jar
+        state: link
+        mode: 0755
       become: yes
     - name: Crea usuario de PosgreSQL para Alfresco
       postgresql_user:
@@ -98,11 +108,11 @@
         name: tomcat8
         state: stopped
       become: yes
-    - name: Descarga Alfresco content e instala en Tomcat
-      get_url:
+    - name: Descarga Alfresco content-services-community e instala en Tomcat
+      unarchive:
         url: https://artifacts.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/content-services-community/6.1.2-ga/content-services-community-6.1.2-ga.war
-        dest: /var/lib/tomcat8/webapps/alfresco.war
-        mode: 0644
-        owner: root
+        dest: /var/lib/tomcat8/webapps/
+        mode: 0755
+        owner: tomcat8
         group: root
       become: yes
