@@ -4,7 +4,7 @@ before_install:
   - sudo apt-get -qq update
 
 install:
-  - sudo apt-get install -qy lxc libvirt-daemon-system python3-pip wireshark-common apache2 acl python-psycopg2 libpq-dev postgresql tomcat8
+  - sudo apt-get install -qy lxc libvirt-daemon-system python3-pip  wireshark-common apache2 acl python-psycopg2 libpq-dev postgresql tomcat8 libpostgresql-jdbc-java
   - sudo systemctl start postgresql
   - sudo pip install ansible
   - sudo apt-get purge mysql-server*

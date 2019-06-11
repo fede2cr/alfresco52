@@ -116,3 +116,10 @@
         owner: tomcat8
         group: root
       become: yes
+    - name: Agrega archivo de config para postgresql en Java
+      copy:
+        src: "{{ role_path }}/files/alfresco-global.properties"
+        dest: /var/lib/tomcat8/webapps/shared/classes/alfresco-global.properties
+        owner: root
+        mode: 0644
+      become: yes
