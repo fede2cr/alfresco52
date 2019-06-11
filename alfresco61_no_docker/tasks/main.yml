@@ -80,6 +80,7 @@
       file:
         path: "{{ item }}"
         state: directory
+        owner: tomcat8
         mode: 0755
       loop:
         - /srv/alfresco
@@ -121,6 +122,19 @@
       copy:
         src: "{{ role_path }}/files/alfresco-global.properties"
         dest: /var/lib/tomcat8/webapps/shared/classes/alfresco-global.properties
+        # TODO: Manejar con include a ansible vault
         owner: root
         mode: 0644
       become: yes
+    - name: Detiene Tomcat para instalar aplicación
+      service:
+        name: tomcat8
+        state: started
+      become: yes
+    - name: Esperamos a que se instale Alfresco y configure BD
+      pause:
+        minutes: 5
+    - name: Comprobamos servicio de Alfresco por puerto TCP/8080
+      uri:
+        url: http://localhost:8080/alfresco/
+        status_code: 200
