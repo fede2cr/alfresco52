@@ -93,3 +93,16 @@
       postgresql_db:
         name: alfresco
         owner: alfresco
+    - name: Detiene Tomcat para instalar aplicación
+      service:
+        name: tomcat8
+        state: stopped
+      become: yes
+    - name: Descarga Alfresco content e instala en Tomcat
+      get_url:
+        url: https://artifacts.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/content-services-community/6.1.2-ga/content-services-community-6.1.2-ga.war
+        dest: /var/lib/tomcat8/webapps/alfresco.war
+        mode: 0644
+        owner: root
+        group: root
+      become: yes
