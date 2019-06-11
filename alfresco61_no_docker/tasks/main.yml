@@ -100,10 +100,14 @@
         name: alfresco
         password: alfresco # TODO: Manejar con include a ansible vault
         state: present
+      become_user: postgres
+      become: yes
     - name: Crea base de datos para Alfresco
       postgresql_db:
         name: alfresco
         owner: alfresco
+      become_user: postgres
+      become: yes
     - name: Detiene Tomcat para instalar aplicación
       service:
         name: tomcat8
