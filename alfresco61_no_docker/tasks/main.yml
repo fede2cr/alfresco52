@@ -110,7 +110,7 @@
       become: yes
     - name: Descarga Alfresco content-services-community e instala en Tomcat
       unarchive:
-        url: https://artifacts.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/content-services-community/6.1.2-ga/content-services-community-6.1.2-ga.war
+        src: https://artifacts.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/content-services-community/6.1.2-ga/content-services-community-6.1.2-ga.war
         dest: /var/lib/tomcat8/webapps/
         mode: 0755
         owner: tomcat8
