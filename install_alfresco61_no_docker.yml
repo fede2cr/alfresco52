@@ -1,7 +1,0 @@
----
-- name: Instala Alfresco 6.1 fuera de ambiente de contenedores
-  hosts: all
-  vars:
-    role_path: alfresco61_no_docker/
-  roles:
-    - alfresco61_no_docker
