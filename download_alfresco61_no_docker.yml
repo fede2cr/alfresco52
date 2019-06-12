@@ -1,0 +1,12 @@
+---
+- name: Descarga archivos de Alfresco 6.1, sin usar docker
+  # TODO: Mover a un tag. Agregar validacion en tarea principal
+  hosts: localhost
+  vars:
+    role_path: alfresco61_no_docker/
+
+  tasks:
+  - name: Descarga Alfresco content-services-community
+    get_url:
+        src: https://artifacts.alfresco.com/nexus/service/local/repositories/releases/content/org/alfresco/content-services-community/6.1.2-ga/content-services-community-6.1.2-ga.war
+        dest:  "{{ role_path }}/files/Instaladores"

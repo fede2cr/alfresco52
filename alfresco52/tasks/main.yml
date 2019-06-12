@@ -1,0 +1,62 @@
+---
+# tasks file for alfresco52
+- name: Instala aptitude (requerido por ansible)
+  apt:
+    name: aptitude
+    state: latest
+    update_cache: yes
+  become: yes
+- name: Actualiza cache
+  apt:
+    update_cache: yes
+  become: yes
+- name: Actualiza paquetes
+  apt:
+    upgrade: dist
+  become: yes
+- name: autoremueve
+  apt:
+    autoremove: yes
+  become: yes
+- name: Instala dependencias
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - libfontconfig1-dev
+    - libice-dev
+    - libsm-dev
+    - libxrender-dev
+    - libxext-dev
+    - libxinerama-dev
+    - libcups2-dev
+    - libglu-dev
+    - libcairo2
+    - libgl1-mesa-glx
+    - rsync
+  become: yes
+- name: Copia configuracion para alfresco
+  copy:
+    src: "{{ role_path }}/files/option-file.txt"
+    dest: "{{ ansible_env.HOME }}"
+    mode: 0644
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+- name: Copia alfresco
+  copy:
+    src: "{{ role_path }}/files/alfresco-community-installer-201707-linux-x64.bin"
+    dest: "{{ ansible_env.HOME }}"
+    mode: 0755
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+- name: Instala Alfresco
+  command:  "{{ ansible_env.HOME }}/alfresco-community-installer-201707-linux-x64.bin --optionfile {{ ansible_env.HOME }}/option-file.txt"
+  become: yes
+  register: alf_install
+- name: Espera a que se complete instalador
+  pause:
+    minutes: 5
+- name: Comprobamos servicio de Alfresco por puerto TCP/8080
+  uri:
+    url: http://localhost:8080/alfresco/
+    status_code: 200
