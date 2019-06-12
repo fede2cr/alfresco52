@@ -10,6 +10,7 @@ install:
   - sudo apt-get purge mysql-server*
 
 script:
+  - touch /home/travis/build/Greencorecr/alfresco_ansible/alfresco52/files/alfresco-community-installer-201707-linux-x64.bin
   - "ansible -i inventory/hosts.example --list-hosts all"
   - "ansible-playbook -i inventory/hosts.example --syntax-check *yml"
   - "ansible-playbook -i inventory/hosts.example -C *yml"
