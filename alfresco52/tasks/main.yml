@@ -53,6 +53,9 @@
   command:  "{{ ansible_env.HOME }}/alfresco-community-installer-201707-linux-x64.bin --optionfile {{ ansible_env.HOME }}/option-file.txt"
   become: yes
   register: alf_install
+- name: Levanta Alfresco
+  command: /opt/alfresco_community/alfresco.sh start
+  become: yes
 - name: Espera a que se complete instalador
   pause:
     seconds: 30
