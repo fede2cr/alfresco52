@@ -54,17 +54,13 @@
   become: yes
   register: alf_install
 - name: Levanta Alfresco
-  command: /opt/alfresco_community/alfresco.sh start
+  service:
+    name: alfresco.service
+    state: restarted
   become: yes
 - name: Espera a que se complete instalador
   pause:
-    seconds: 30
-- name: Levanta Alfresco
-  command: /opt/alfresco_community/alfresco.sh start
-  become: yes
-- name: Espera a que se complete instalador
-  pause:
-    minutes: 5
+    seconds: 120
 - name: Comprobamos servicio de Alfresco por puerto TCP/8080
   uri:
     url: http://localhost:8080/alfresco/
