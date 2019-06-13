@@ -60,7 +60,7 @@
   become: yes
 - name: Espera a que se complete instalador
   pause:
-    seconds: 120
+    seconds: 180
 - name: Comprobamos servicio de Alfresco por puerto TCP/8080
   uri:
     url: http://localhost:8080/alfresco/
