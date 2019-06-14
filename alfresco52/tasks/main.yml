@@ -6,19 +6,23 @@
     state: latest
     update_cache: yes
   become: yes
+  tags: install
 - name: Actualiza cache
   apt:
     update_cache: yes
   become: yes
+  tags: install
 - name: Actualiza paquetes
   apt:
     upgrade: dist
   become: yes
+  tags: install
 - name: autoremueve
   apt:
     autoremove: yes
   become: yes
-- name: Instala dependencias
+  tags: install
+- name: Instala dependencias para Alfresco
   apt:
     name: "{{ item }}"
     state: present
@@ -35,13 +39,92 @@
     - libgl1-mesa-glx
     - rsync
   become: yes
-- name: Copia configuracion para alfresco
+  tags: install
+- name: Preconfigura contraseñas, en paquete de MariaDB
+  debconf:
+    name: mariadb-server
+    question: "{{ item }}"
+    value: "root"
+    vtype: password
+  loop:
+    - mysql-server/root_password
+    - mysql-server/root_password_again
+  become: yes
+  tags: mysql_install
+- name: Instala paquetes de MariaDB
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - mariadb-server
+    - python-pymysql
+  become: yes
+  tags: mysql_install
+- name: Inicia base de datos
+  service: 
+    name: mysql 
+    state: started
+    enabled: true
+  become: yes
+  tags: mysql_install
+- name: Configura usuario root de MySQL
+  mysql_user:
+    name: root
+    host: "{{ item }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    password: "root"
+    priv: '*.*:ALL,GRANT'
+    check_implicit_admin: true
+  loop:
+    - "{{ ansible_hostname }}"
+    - 127.0.0.1
+    - ::1
+    - localhost
+  become: yes
+  tags: mysql_install
+- name: Reinicia base de datos para aplicar usuario
+  service: 
+    name: mysql
+    state: restarted
+    enabled: true
+  become: yes
+  tags: mysql_install
+- name: Crea base de datos en MariaDB
+  mysql_db:
+    name: alfresco
+    state: present
+    login_user: root
+    login_password: root
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  become: yes
+  tags: mysql_install
+- name: Crea usuario en base de datos MariaDB
+  mysql_user:
+    name: alfresco
+    password: alfresco
+    state: present
+    priv: 'alfresco.*:ALL'
+    login_user: root
+    login_password: root
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+  become: yes
+  tags: mysql_install
+- name: Copia configuracion para alfresco, usando PostgreSQL
   copy:
-    src: "{{ role_path }}/files/option-file.txt"
-    dest: "{{ ansible_env.HOME }}"
+    src: "{{ role_path }}/files/option-file-pgsql.txt"
+    dest: "{{ ansible_env.HOME }}/option-file.txt"
     mode: 0644
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
+  tags: pgsql
+- name: Copia configuracion para alfresco, usando MySQL
+  copy:
+    src: "{{ role_path }}/files/option-file-mysql.txt"
+    dest: "{{ ansible_env.HOME }}/option-file.txt"
+    mode: 0644
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+  tags: mysql
 - name: Copia alfresco
   copy:
     src: "{{ role_path }}/files/alfresco-community-installer-201707-linux-x64.bin"
@@ -49,19 +132,50 @@
     mode: 0755
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
+  tags: install
+- name: Revisa que Alfresco no esté instalado
+  stat:
+    path: /opt/alfresco_community
+  register: alfresco_dir
+  tags: install
+- name: Presenta error si Alfresco ha sido instalado
+  fail:
+    msg: Alfresco ha sido instalado, omitiendo completar instalación
+  when: alfresco_dir.stat.isdir is defined and alfresco_dir.stat.isdir
+  tags: install
 - name: Instala Alfresco
   command:  "{{ ansible_env.HOME }}/alfresco-community-installer-201707-linux-x64.bin --optionfile {{ ansible_env.HOME }}/option-file.txt"
   become: yes
   register: alf_install
+  tags: install
+- name: Copia modulo para Java y MySQL
+  unarchive:
+    src: https://downloads.mysql.com/archives/get/file/mysql-connector-java-5.1.46.tar.gz
+    dest: /opt/alfresco_community/tomcat/lib/
+    remote_src: yes
+    extra_opts:
+      - 'mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar'
+  become: yes
+  tags: mysql
+- name: Mueve módulo para Java y MySQL a directorio apropiado
+  copy: 
+    remote_src: True
+    src: /opt/alfresco_community/tomcat/lib/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar
+    dest: /opt/alfresco_community/tomcat/lib/
+  become: yes
+  tags: mysql
 - name: Levanta Alfresco
   service:
     name: alfresco.service
     state: restarted
   become: yes
+  tags: install
 - name: Espera a que se complete instalador
   pause:
-    seconds: 180
+    seconds: 90
+  tags: install
 - name: Comprobamos servicio de Alfresco por puerto TCP/8080
   uri:
     url: http://localhost:8080/alfresco/
     status_code: 200
+  tags: install
