@@ -82,13 +82,6 @@
     - localhost
   become: yes
   tags: mysql_install
-- name: Reinicia base de datos para aplicar usuario
-  service: 
-    name: mysql
-    state: restarted
-    enabled: true
-  become: yes
-  tags: mysql_install
 - name: Crea base de datos en MariaDB
   mysql_db:
     name: alfresco
@@ -101,12 +94,25 @@
 - name: Crea usuario en base de datos MariaDB
   mysql_user:
     name: alfresco
+    host: "{{ item }}"
     password: alfresco
     state: present
     priv: 'alfresco.*:ALL'
     login_user: root
     login_password: root
     login_unix_socket: /var/run/mysqld/mysqld.sock
+  loop:
+    - "{{ ansible_hostname }}"
+    - 127.0.0.1
+    - ::1
+    - localhost
+  become: yes
+  tags: mysql_install
+- name: Reinicia base de datos para aplicar usuario
+  service: 
+    name: mysql
+    state: restarted
+    enabled: true
   become: yes
   tags: mysql_install
 - name: Copia configuracion para alfresco, usando PostgreSQL
@@ -143,25 +149,42 @@
     msg: Alfresco ha sido instalado, omitiendo completar instalación
   when: alfresco_dir.stat.isdir is defined and alfresco_dir.stat.isdir
   tags: install
-- name: Instala Alfresco
-  command:  "{{ ansible_env.HOME }}/alfresco-community-installer-201707-linux-x64.bin --optionfile {{ ansible_env.HOME }}/option-file.txt"
+- name: Crea directorio de libs de tomcat
+  file:
+    path: /opt/alfresco_community/tomcat/lib/
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
   become: yes
-  register: alf_install
-  tags: install
+  tags: mysql
 - name: Copia modulo para Java y MySQL
   unarchive:
     src: https://downloads.mysql.com/archives/get/file/mysql-connector-java-5.1.46.tar.gz
+#    src: https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.16.tar.gz
     dest: /opt/alfresco_community/tomcat/lib/
     remote_src: yes
     extra_opts:
       - 'mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar'
   become: yes
   tags: mysql
-- name: Mueve módulo para Java y MySQL a directorio apropiado
+- name: Copia módulo para Java y MySQL a directorio apropiado
   copy: 
     remote_src: True
     src: /opt/alfresco_community/tomcat/lib/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar
     dest: /opt/alfresco_community/tomcat/lib/
+  become: yes
+  tags: mysql
+- name: Instala Alfresco
+  command:  "{{ ansible_env.HOME }}/alfresco-community-installer-201707-linux-x64.bin --optionfile {{ ansible_env.HOME }}/option-file.txt"
+  become: yes
+  register: alf_install
+  tags: install
+- name: Cambia archivo de wqsapi
+  replace:
+    regexp: "#wcmqs.api.user=admin"
+    replace: "wcmqs.api.user=admin"
+    dest: /opt/alfresco_community/tomcat/shared/classes/alfresco/extension/wqsapi-custom.properties
   become: yes
   tags: mysql
 - name: Levanta Alfresco
@@ -176,6 +199,6 @@
   tags: install
 - name: Comprobamos servicio de Alfresco por puerto TCP/8080
   uri:
-    url: http://localhost:8080/alfresco/
+    url: http://localhost:8080/share/
     status_code: 200
   tags: install
