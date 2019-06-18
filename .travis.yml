@@ -4,10 +4,11 @@ before_install:
   - sudo apt-get -qq update
 
 install:
-  - sudo apt-get install -qy lxc libvirt-daemon-system python3-pip  wireshark-common apache2 acl python-psycopg2 libpq-dev postgresql libpostgresql-jdbc-java python-pymysql
-  - sudo systemctl start postgresql
-  - sudo pip install ansible
   - sudo apt-get purge mysql-server*
+  - sudo apt-get install -qy lxc libvirt-daemon-system python3-pip  wireshark-common apache2 acl python-psycopg2 libpq-dev postgresql libpostgresql-jdbc-java python-pymysql mariadb-server
+  - sudo systemctl start postgresql
+  - sudo systemctl start mariadb.service
+  - sudo pip install ansible
 
 script:
   - wget -O /home/travis/build/Greencorecr/alfresco_ansible/alfresco52/files/alfresco-community-installer-201707-linux-x64.bin https://download.alfresco.com/release/community/201707-build-00028/alfresco-community-installer-201707-linux-x64.bin
