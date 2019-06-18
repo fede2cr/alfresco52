@@ -89,6 +89,7 @@
     login_user: root
     login_password: root
     login_unix_socket: /var/run/mysqld/mysqld.sock
+    encoding: utf8
   become: yes
   tags: mysql_install
 - name: Crea usuario en base de datos MariaDB
@@ -149,13 +150,16 @@
     msg: Alfresco ha sido instalado, omitiendo completar instalación
   when: alfresco_dir.stat.isdir is defined and alfresco_dir.stat.isdir
   tags: install
-- name: Crea directorio de libs de tomcat
-  file:
-    path: /opt/alfresco_community/tomcat/lib/
-    state: directory
-    owner: root
-    group: root
-    mode: 0755
+- name: Instala Alfresco
+  command:  "{{ ansible_env.HOME }}/alfresco-community-installer-201707-linux-x64.bin --optionfile {{ ansible_env.HOME }}/option-file.txt"
+  become: yes
+  register: alf_install
+  tags: install
+- name: Cambia archivo de wqsapi
+  replace:
+    regexp: "#wcmqs.api.user=admin"
+    replace: "wcmqs.api.user=admin"
+    dest: /opt/alfresco_community/tomcat/shared/classes/alfresco/extension/wqsapi-custom.properties
   become: yes
   tags: mysql
 - name: Copia modulo para Java y MySQL
@@ -175,18 +179,6 @@
     dest: /opt/alfresco_community/tomcat/lib/
   become: yes
   tags: mysql
-- name: Instala Alfresco
-  command:  "{{ ansible_env.HOME }}/alfresco-community-installer-201707-linux-x64.bin --optionfile {{ ansible_env.HOME }}/option-file.txt"
-  become: yes
-  register: alf_install
-  tags: install
-- name: Cambia archivo de wqsapi
-  replace:
-    regexp: "#wcmqs.api.user=admin"
-    replace: "wcmqs.api.user=admin"
-    dest: /opt/alfresco_community/tomcat/shared/classes/alfresco/extension/wqsapi-custom.properties
-  become: yes
-  tags: mysql
 - name: Levanta Alfresco
   service:
     name: alfresco.service
@@ -195,7 +187,7 @@
   tags: install
 - name: Espera a que se complete instalador
   pause:
-    seconds: 90
+    seconds: 130
   tags: install
 - name: Comprobamos servicio de Alfresco por puerto TCP/8080
   uri:
