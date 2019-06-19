@@ -161,7 +161,7 @@
     replace: "wcmqs.api.user=admin"
     dest: /opt/alfresco_community/tomcat/shared/classes/alfresco/extension/wqsapi-custom.properties
   become: yes
-  check_mode: no
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql
 - name: Copia modulo para Java y MySQL
   unarchive:
