@@ -171,6 +171,7 @@
     extra_opts:
       - 'mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar'
   become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql
 - name: Copia módulo para Java y MySQL a directorio apropiado
   copy: 
@@ -178,6 +179,7 @@
     src: /opt/alfresco_community/tomcat/lib/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar
     dest: /opt/alfresco_community/tomcat/lib/
   become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql
 - name: Levanta Alfresco
   service:
