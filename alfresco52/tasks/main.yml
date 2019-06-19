@@ -134,7 +134,7 @@
   tags: mysql
 - name: Copia alfresco
   copy:
-    src: "{{ role_path }}/files/alfresco-community-installer-201707-linux-x64.bin"
+    src: "{{ role_path }}/files/{{ alfresco_installer }}"
     dest: "{{ ansible_env.HOME }}"
     mode: 0755
     owner: "{{ ansible_user }}"
@@ -151,7 +151,7 @@
   when: alfresco_dir.stat.isdir is defined and alfresco_dir.stat.isdir
   tags: install
 - name: Instala Alfresco
-  command:  "{{ ansible_env.HOME }}/alfresco-community-installer-201707-linux-x64.bin --optionfile {{ ansible_env.HOME }}/option-file.txt"
+  command:  "{{ ansible_env.HOME }}/{{ alfresco_installer }} --optionfile {{ ansible_env.HOME }}/option-file.txt"
   become: yes
   register: alf_install
   tags: install
@@ -161,11 +161,11 @@
     replace: "wcmqs.api.user=admin"
     dest: /opt/alfresco_community/tomcat/shared/classes/alfresco/extension/wqsapi-custom.properties
   become: yes
+  check_mode: no
   tags: mysql
 - name: Copia modulo para Java y MySQL
   unarchive:
     src: https://downloads.mysql.com/archives/get/file/mysql-connector-java-5.1.46.tar.gz
-#    src: https://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.16.tar.gz
     dest: /opt/alfresco_community/tomcat/lib/
     remote_src: yes
     extra_opts:
