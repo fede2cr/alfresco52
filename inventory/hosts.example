@@ -1,2 +1,14 @@
-[fisicos]
-localhost ansible_connection=local alfresco_installer=alfresco-community-installer-201707-linux-x64.bin
+---
+  alfresco:
+    hosts:
+      localhost:
+        ansible_connection=local
+        ansible_user: greencore
+        alfresco_installer: alfresco-community-installer-201707-linux-x64.bin
+        # vieja # alfresco_installer: alfresco-community-installer-201602-linux-x64.bin
+        alf_glob_prop_path: /opt/alfresco_community/tomcat/shared/classes/alfresco-global.properties
+        alf_root: /opt/alfresco_community/
+        dir_root: /opt/alfresco_community/alf_data
+        solr4_root: /opt/alfresco_community/alf_data/solr4/index
+
+
