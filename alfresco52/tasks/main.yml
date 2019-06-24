@@ -74,6 +74,7 @@
     state: stopped
   become: yes
   tags: mysql_preupgrade
+  ignore_errors: "{{ ansible_check_mode }}"
 - name: Encuentra PID de tomcat
   pids:
     name: java
@@ -199,6 +200,7 @@
     state: started
     enabled: true
   become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql_install
 - name: Configura usuario root de MySQL
   mysql_user:
@@ -326,6 +328,7 @@
     state: restarted
   become: yes
   tags: install
+  ignore_errors: "{{ ansible_check_mode }}"
 - name: Revisa cada 10s, si ya esta abierto puerto 8080
   wait_for:
     port: 8080
@@ -354,6 +357,7 @@
     name: alfresco.service
     state: stopped
   become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql_postupgrade
 - name: Encuentra PID de tomcat
   pids:
@@ -394,6 +398,7 @@
     name: alfresco.service
     state: restarted
   become: yes
+  ignore_errors: "{{ ansible_check_mode }}"
   tags: postinstall
 - name: Revisa cada 10s, si ya esta abierto puerto 8080 luego de actualizar
   wait_for:

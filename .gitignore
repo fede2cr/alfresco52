@@ -2,3 +2,4 @@
 *.swp
 inventory/hosts
 .scannerwork
+alfresco-community-installer-*.bin
