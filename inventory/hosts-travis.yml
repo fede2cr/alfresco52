@@ -2,7 +2,7 @@
   alfresco:
     hosts:
       localhost:
-        ansible_connection=local
+        ansible_connection: local
         ansible_user: greencore
         alfresco_installer: alfresco-community-installer-201707-linux-x64.bin
         # vieja # alfresco_installer: alfresco-community-installer-201602-linux-x64.bin
