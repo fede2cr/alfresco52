@@ -2,6 +2,7 @@ dist: xenial
 
 before_install:
   - sudo apt-get -qq update
+  - ansible-config dump | grep INVENTORY_ENABLED
 
 install:
   - sudo apt-get purge mysql-server*
