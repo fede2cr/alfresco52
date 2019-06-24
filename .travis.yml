@@ -2,7 +2,6 @@ dist: xenial
 
 before_install:
   - sudo apt-get -qq update
-  - ansible-config dump | grep INVENTORY_ENABLED
 
 install:
   - sudo apt-get purge mysql-server*
@@ -10,6 +9,7 @@ install:
   - sudo systemctl start postgresql
   - sudo systemctl start mysql.service
   - sudo pip install ansible
+  - ansible-config dump | grep INVENTORY_ENABLED
 
 script:
   - wget -O /home/travis/build/Greencorecr/alfresco_ansible/alfresco52/files/alfresco-community-installer-201707-linux-x64.bin https://download.alfresco.com/release/community/201707-build-00028/alfresco-community-installer-201707-linux-x64.bin
