@@ -2,6 +2,11 @@
 # tasks file for alfresco52
 # TODO: Validar resto de puertos de Alfresco, antes y después
 # TODO: Validar logeando usuario, subiendo contenido, bajando contenido, y borrando contenido
+- name: Revisa que no se ejecuten tags que nadie llamo
+  fail:
+    msg: Nadie llamo a este tag...
+  tags:
+  - nadiemellamo
 - name: Instala aptitude (requerido por ansible)
   apt:
     name: aptitude
@@ -388,7 +393,7 @@
     login_user: root
     login_password: root
     login_unix_socket: /var/run/mysqld/mysqld.sock
-  tags: mysql_postinstall
+  tags: mysql_postupgrade
   become: yes
   #sudo mysql -u root -p alfresco < alfresco.db 
 #sudo systemctl start alfresco
@@ -399,21 +404,21 @@
     state: restarted
   become: yes
   ignore_errors: "{{ ansible_check_mode }}"
-  tags: postinstall
+  tags: mysql_postupgrade
 - name: Revisa cada 10s, si ya esta abierto puerto 8080 luego de actualizar
   wait_for:
     port: 8080
     delay: 10
-  tags: postinstall
+  tags: mysql_postupgrade
 - name: Espera a que se complete instalador
   pause:
     seconds: 120
-  tags: postinstall
+  tags: mysql_postupgrade
 - name: Comprobamos servicio de Alfresco por puerto TCP/8080 luego de actualizar
   uri:
     url: http://localhost:8080/share/
     status_code: 200
-  tags: postinstall
+  tags: mysql_postupgrade
 
 # TODO: Sincronizar respaldos afuera o disco externo?
 
