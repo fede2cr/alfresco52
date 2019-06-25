@@ -15,4 +15,4 @@ script:
   - "ansible -i inventory/hosts-travis.yml --list-hosts all"
   - "ansible-playbook -i inventory/hosts-travis.yml --syntax-check *yml"
   - "ansible-playbook -i inventory/hosts-travis.yml -C *yml"
-  - "ansible-playbook -i inventory/hosts-travis.yml install_alfresco52-mysql_no_docker.yml"
+  - "ansible-playbook -i inventory/hosts-travis.yml install_alfresco52-mysql_no_docker.yml --tags install,mysql_install,mysql"
