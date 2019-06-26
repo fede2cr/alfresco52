@@ -29,11 +29,7 @@ provisioner:
         dir_root: /opt/alfresco_community/alf_data
         solr4_root: /opt/alfresco_community/alf_data/solr4/index
         installer_delay: 190
-<<<<<<< HEAD
         upgrade: false
-=======
-        update: false
->>>>>>> d9524645754a5d888a43de7ca798df9f6cf54011
   lint:
     name: ansible-lint
 verifier:
