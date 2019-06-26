@@ -66,7 +66,7 @@
     name: alfresco.service
     state: stopped
   become: true
-  tags: mysql_preupgrade
+  when: upgrade == true
   ignore_errors: "{{ ansible_check_mode }}"
 - name: Encuentra PID de tomcat
   pids:
