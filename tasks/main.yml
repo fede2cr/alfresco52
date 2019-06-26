@@ -7,11 +7,6 @@
 # TODO: Comprobar servicios con handler
 # TODO: Transformar archivo de opciones en template de jinja con info en
 #       inventario. Opcional automatizar mysql/pgsql
-- name: Revisa que no se ejecuten tags que nadie llamo
-  fail:
-    msg: Nadie llamo a este tag...
-  tags:
-    - nadiemellamo
 - name: Instala aptitude (requerido por ansible)
   apt:
     name: aptitude
