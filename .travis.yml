@@ -1,4 +1,5 @@
 ---
+python: 3.6
 language: python
 services: docker
 
@@ -10,7 +11,7 @@ env:
     - MOLECULE_DISTRO: ubuntu1804
 
     # Test other role features.
-    #- MOLECULE_DISTRO: ubuntu1804
+    # - MOLECULE_DISTRO: ubuntu1804
     #  MOLECULE_PLAYBOOK: playbook-http-port.yml
 
 install:

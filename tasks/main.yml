@@ -52,96 +52,98 @@
   become: true
   when: database == 'mysql'
 - block:
-  - name: Revisa que exista alfresco-global.properties según inventario
-    stat:
-      path: "{{ alf_glob_prop_path }}"
-  - name: Comprueba dir.root
-    lineinfile:
-      path: "{{ alf_glob_prop_path }}"
-      line: "dir.root={{ dir_root }}"
-    check_mode: true
-    become: true
-    register: dir_root_ok
-    failed_when: dir_root_ok.changed
-  - name: Detiene Alfresco antes de actualización
-    service:
-      name: alfresco.service
-      state: stopped
-    become: true
-    ignore_errors: "{{ ansible_check_mode }}"
-  - name: Encuentra PID de tomcat
-    pids:
-      name: java
-    register: tomcat_pid
-  - name: Espera hasta que se detenga Alfresco
-    wait_for:
-      path: "/proc/{{ tomcat_pid.pids|join(',')}} }}/status"
-      state: absent
-    become: true
-  - name: Respalda base de datos Alfresco, y almancena en HOME
-    mysql_db:
-      login_user: root
-      login_password: root
-      login_unix_socket: /var/run/mysqld/mysqld.sock
-      state: dump
-      name: alfresco
-      target: "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}.sql"
-    become: true
-  - name: Respalda {{ dir_root }} y almancena en HOME
-    archive:
-      path: "{{ dir_root }}"
-      dest: "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}.tar.bz2"
-      format: bz2
-    become: true
-  - name: Respalda {{ alf_root }} y almancena en HOME
-    archive:
-      path: "{{ alf_root }}"
-      dest:
-        - "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}-full.tar.bz2"
-      format: bz2
-    become: true
-  - name: Respalda {{ solr4_root }} y almancena en HOME
-    archive:
-      path: "{{ alf_root }}"
-      dest: >-
-            "/{{ ansible_env.HOME }}/"
-            "alfresco-{{ inventory_hostname }}-solr4.tar.bz2"
-      format: bz2
-    become: true
-  - name: Mueve el Alfresco original a otro directorio antes de actualizar
-    command: mv {{ alf_root }} /opt/alfresco.old
-    become: true
-  - name: Crea base de datos en MariaDB
-    mysql_db:
-      name: alfresco
-      state: absent
-      login_user: root
-      login_password: root
-      login_unix_socket: /var/run/mysqld/mysqld.sock
-      encoding: utf8
-    become: true
-  - name: Crea usuario en base de datos MariaDB
-    mysql_user:
-      name: alfresco
-      host: "{{ item }}"
-      password: alfresco
-      state: absent
-      priv: 'alfresco.*:ALL'
-      login_user: root
-      login_password: root
-      login_unix_socket: /var/run/mysqld/mysqld.sock
-    loop:
-      - "{{ ansible_hostname }}"
-      - 127.0.0.1
-      - ::1
-      - localhost
-    become: true
-  - name: Reinicia base de datos para aplicar usuario
-    service:
-      name: mysql
-      state: restarted
-      enabled: true
-    become: true
+    - name: Revisa que exista alfresco-global.properties según inventario
+      stat:
+        path: "{{ alf_glob_prop_path }}"
+    - name: Comprueba dir.root
+      lineinfile:
+        path: "{{ alf_glob_prop_path }}"
+        line: "dir.root={{ dir_root }}"
+      check_mode: true
+      become: true
+      register: dir_root_ok
+      failed_when: dir_root_ok.changed
+    - name: Detiene Alfresco antes de actualización
+      service:
+        name: alfresco.service
+        state: stopped
+      become: true
+      ignore_errors: "{{ ansible_check_mode }}"
+    - name: Encuentra PID de tomcat
+      pids:
+        name: java
+      register: tomcat_pid
+    - name: Espera hasta que se detenga Alfresco
+      wait_for:
+        path: "/proc/{{ tomcat_pid.pids|join(',')}} }}/status"
+        state: absent
+      become: true
+    - name: Respalda base de datos Alfresco, y almancena en HOME
+      mysql_db:
+        login_user: root
+        login_password: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        state: dump
+        name: alfresco
+        target: "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}.sql"
+      become: true
+    - name: Respalda {{ dir_root }} y almancena en HOME
+      archive:
+        path: "{{ dir_root }}"
+        dest: >-
+          "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}.tar.bz2"
+        format: bz2
+      become: true
+    - name: Respalda {{ alf_root }} y almancena en HOME
+      archive:
+        path: "{{ alf_root }}"
+        dest: >-
+          "/{{ ansible_env.HOME }}/"
+          "alfresco-{{ inventory_hostname }}-full.tar.bz2"
+        format: bz2
+      become: true
+    - name: Respalda {{ solr4_root }} y almancena en HOME
+      archive:
+        path: "{{ alf_root }}"
+        dest: >-
+              "/{{ ansible_env.HOME }}/"
+              "alfresco-{{ inventory_hostname }}-solr4.tar.bz2"
+        format: bz2
+      become: true
+    - name: Mueve el Alfresco original a otro directorio antes de actualizar
+      command: mv {{ alf_root }} /opt/alfresco.old
+      become: true
+    - name: Crea base de datos en MariaDB
+      mysql_db:
+        name: alfresco
+        state: absent
+        login_user: root
+        login_password: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        encoding: utf8
+      become: true
+    - name: Crea usuario en base de datos MariaDB
+      mysql_user:
+        name: alfresco
+        host: "{{ item }}"
+        password: alfresco
+        state: absent
+        priv: 'alfresco.*:ALL'
+        login_user: root
+        login_password: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      loop:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+      become: true
+    - name: Reinicia base de datos para aplicar usuario
+      service:
+        name: mysql
+        state: restarted
+        enabled: true
+      become: true
   when: upgrade == true
 - name: Preconfigura contraseñas, en paquete de MariaDB
   debconf:
