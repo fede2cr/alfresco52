@@ -1,36 +1,38 @@
 ---
 # tasks file for alfresco52
 # TODO: Validar resto de puertos de Alfresco, antes y después
-# TODO: Validar logeando usuario, subiendo contenido, bajando contenido, y borrando contenido
+# TODO: Validar logeando usuario, subiendo contenido, bajando contenido, y
+#       borrando contenido
 # TODO: mover "hasta que palme tomcat", y comprobación de Alfresco, a handlers
 # TODO: Comprobar servicios con handler
-# TODO: Transformar archivo de opciones en template de jinja con info en inventario. Opcional automatizar mysql/pgsql
+# TODO: Transformar archivo de opciones en template de jinja con info en
+#       inventario. Opcional automatizar mysql/pgsql
 - name: Revisa que no se ejecuten tags que nadie llamo
   fail:
     msg: Nadie llamo a este tag...
   tags:
-  - nadiemellamo
+    - nadiemellamo
 - name: Instala aptitude (requerido por ansible)
   apt:
     name: aptitude
     state: latest
-    update_cache: yes
-  become: yes
+    update_cache: true
+  become: true
   tags: install
 - name: Actualiza cache
   apt:
-    update_cache: yes
-  become: yes
+    update_cache: true
+  become: true
   tags: install
 - name: Actualiza paquetes
   apt:
     upgrade: dist
-  become: yes
+  become: true
   tags: install
 - name: autoremueve
   apt:
-    autoremove: yes
-  become: yes
+    autoremove: true
+  become: true
   tags: install
 - name: Instala dependencias para Alfresco
   apt:
@@ -49,7 +51,7 @@
     - libgl1-mesa-glx
     - rsync
     - python-psutil
-  become: yes
+  become: true
   tags: install
 - name: Revisa que exista alfresco-global.properties según inventario
   stat:
@@ -60,15 +62,15 @@
     path: "{{ alf_glob_prop_path }}"
     line: "dir.root={{ dir_root }}"
   tags: mysql_preupgrade
-  check_mode: yes
-  become: yes
+  check_mode: true
+  become: true
   register: dir_root_ok
   failed_when: dir_root_ok.changed
 - name: Detiene Alfresco antes de actualización
   service:
     name: alfresco.service
     state: stopped
-  become: yes
+  become: true
   tags: mysql_preupgrade
   ignore_errors: "{{ ansible_check_mode }}"
 - name: Encuentra PID de tomcat
@@ -81,7 +83,7 @@
     path: "/proc/{{ tomcat_pid.pids|join(',')}} }}/status"
     state: absent
   tags: mysql_preupgrade
-  become: yes
+  become: true
 - name: Respalda base de datos Alfresco, y almancena en HOME
   mysql_db:
     login_user: root
@@ -91,32 +93,35 @@
     name: alfresco
     target: "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}.sql"
   tags: mysql_preupgrade
-  become: yes
+  become: true
 - name: Respalda {{ dir_root }} y almancena en HOME
   archive:
     path: "{{ dir_root }}"
     dest: "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}.tar.bz2"
     format: bz2
   tags: mysql_preupgrade
-  become: yes
+  become: true
 - name: Respalda {{ alf_root }} y almancena en HOME
   archive:
     path: "{{ alf_root }}"
-    dest: "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}-full.tar.bz2"
+    dest:
+      - "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}-full.tar.bz2"
     format: bz2
   tags: mysql_preupgrade
-  become: yes
+  become: true
 - name: Respalda {{ solr4_root }} y almancena en HOME
   archive:
     path: "{{ alf_root }}"
-    dest: "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}-solr4.tar.bz2"
+    dest: >-
+          "/{{ ansible_env.HOME }}/"
+          "alfresco-{{ inventory_hostname }}-solr4.tar.bz2"
     format: bz2
   tags: mysql_preupgrade
-  become: yes
+  become: true
 - name: Mueve el Alfresco original a otro directorio antes de actualizar
   command: mv {{ alf_root }} /opt/alfresco.old
   tags: mysql_preupgrade
-  become: yes
+  become: true
 - name: Crea base de datos en MariaDB
   mysql_db:
     name: alfresco
@@ -125,7 +130,7 @@
     login_password: root
     login_unix_socket: /var/run/mysqld/mysqld.sock
     encoding: utf8
-  become: yes
+  become: true
   tags: mysql_preupgrade
 - name: Crea usuario en base de datos MariaDB
   mysql_user:
@@ -142,14 +147,14 @@
     - 127.0.0.1
     - ::1
     - localhost
-  become: yes
+  become: true
   tags: mysql_preupgrade
 - name: Reinicia base de datos para aplicar usuario
-  service: 
+  service:
     name: mysql
     state: restarted
     enabled: true
-  become: yes
+  become: true
   tags: mysql_preupgrade
 - name: Preconfigura contraseñas, en paquete de MariaDB
   debconf:
@@ -160,7 +165,7 @@
   loop:
     - mysql-server/root_password
     - mysql-server/root_password_again
-  become: yes
+  become: true
   tags: mysql_install
 - name: Instala paquetes de MariaDB
   apt:
@@ -169,16 +174,16 @@
   loop:
     - mariadb-server
     - python-pymysql
-  become: yes
+  become: true
   tags:
     - mysql_install
     - mysql_preupgrade
 - name: Inicia base de datos
-  service: 
-    name: mysql 
+  service:
+    name: mysql
     state: started
     enabled: true
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql_install
 - name: Configura usuario root de MySQL
@@ -194,7 +199,7 @@
     - 127.0.0.1
     - ::1
     - localhost
-  become: yes
+  become: true
   tags: mysql_install
 - name: Crea base de datos en MariaDB
   mysql_db:
@@ -204,7 +209,7 @@
     login_password: root
     login_unix_socket: /var/run/mysqld/mysqld.sock
     encoding: utf8
-  become: yes
+  become: true
   tags:
     - mysql_install
     - mysql_preupgrade
@@ -223,16 +228,16 @@
     - 127.0.0.1
     - ::1
     - localhost
-  become: yes
+  become: true
   tags:
     - mysql_install
     - mysql_preupgrade
 - name: Reinicia base de datos para aplicar usuario
-  service: 
+  service:
     name: mysql
     state: restarted
     enabled: true
-  become: yes
+  become: true
   tags: mysql_install
 - name: Copia configuracion para alfresco, usando PostgreSQL
   copy:
@@ -269,43 +274,51 @@
   when: alfresco_dir.stat.isdir is defined and alfresco_dir.stat.isdir
   tags: install
 - name: Instala Alfresco
-  command:  "{{ ansible_env.HOME }}/{{ alfresco_installer }} --optionfile {{ ansible_env.HOME }}/option-file.txt"
-  become: yes
+  command: >-
+          "{{ ansible_env.HOME }}/{{ alfresco_installer }}"
+          " --optionfile {{ ansible_env.HOME }}/option-file.txt"
+  become: true
   register: alf_install
   tags: install
-- name: Cambia archivo de wqsapi #TODO: ¿Se ocupa?
+- name: Cambia archivo de wqsapi
   replace:
     regexp: "#wcmqs.api.user=admin"
     replace: "wcmqs.api.user=admin"
-    dest: /opt/alfresco_community/tomcat/shared/classes/alfresco/extension/wqsapi-custom.properties
-  become: yes
+    dest: >-
+       /opt/alfresco_community/tomcat/shared/classes/alfresco/extension/
+       wqsapi-custom.properties
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql
 - name: Copia modulo para Java y MySQL
   unarchive:
-    src: https://downloads.mysql.com/archives/get/file/mysql-connector-java-5.1.46.tar.gz
+    src: >-
+      https://downloads.mysql.com/archives/get/file/
+      mysql-connector-java-5.1.46.tar.gz
     dest: /opt/alfresco_community/tomcat/lib/
-    remote_src: yes
+    remote_src: true
     extra_opts:
       - 'mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar'
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql
 - name: Copia módulo para Java y MySQL a directorio apropiado
-  copy: 
-    remote_src: True
-    src: /opt/alfresco_community/tomcat/lib/mysql-connector-java-5.1.46/mysql-connector-java-5.1.46.jar
+  copy:
+    remote_src: true
+    src: >-
+      /opt/alfresco_community/tomcat/lib/mysql-connector-java-5.1.46/
+      mysql-connector-java-5.1.46.jar
     dest: /opt/alfresco_community/tomcat/lib/
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
-  tags: 
+  tags:
     - mysql
     - mysql_postinstall
 - name: Levanta Alfresco
   service:
     name: alfresco.service
     state: restarted
-  become: yes
+  become: true
   tags: install
   ignore_errors: "{{ ansible_check_mode }}"
 - name: Revisa cada 10s, si ya esta abierto puerto 8080
@@ -326,7 +339,7 @@
   service:
     name: alfresco.service
     state: stopped
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql_postupgrade
 - name: Encuentra PID de tomcat
@@ -339,15 +352,15 @@
     path: "/proc/{{ tomcat_pid.pids|join(',')}} }}/status"
     state: absent
   tags: mysql_postupgrade
-  become: yes
-- name: Mueve el dir_root en blanco de la instalación de Alfresco, antes de importar
+  become: true
+- name: Mueve el dir_root en blanco de la instalación, antes de importar
   command: mv {{ dir_root }} /opt/dir_root.old
   tags: mysql_postupgrade
-  become: yes
+  become: true
 - name: Importa dir_root en postinstalación
   command: "mv /opt/alfresco.old/alf_data/ {{ alf_root }}/"
   tags: mysql_postupgrade
-  become: yes
+  become: true
 - name: Importa base de datos en postinstalación
   mysql_db:
     state: import
@@ -357,12 +370,12 @@
     login_password: root
     login_unix_socket: /var/run/mysqld/mysqld.sock
   tags: mysql_postupgrade
-  become: yes
+  become: true
 - name: Levanta Alfresco luego de actualizar
   service:
     name: alfresco.service
     state: restarted
-  become: yes
+  become: true
   ignore_errors: "{{ ansible_check_mode }}"
   tags: mysql_postupgrade
 - name: Revisa cada 10s, si ya esta abierto puerto 8080 luego de actualizar
