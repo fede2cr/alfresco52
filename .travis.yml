@@ -10,8 +10,8 @@ env:
     - MOLECULE_DISTRO: ubuntu1804
 
     # Test other role features.
-    - MOLECULE_DISTRO: ubuntu1804
-      MOLECULE_PLAYBOOK: playbook-http-port.yml
+    #- MOLECULE_DISTRO: ubuntu1804
+    #  MOLECULE_PLAYBOOK: playbook-http-port.yml
 
 install:
   - pip install molecule docker
