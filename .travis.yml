@@ -5,18 +5,19 @@ services: docker
 env:
   global:
     - ROLE_NAME: alfresco52
+  matrix:
+    # Test defaults.
+    - MOLECULE_DISTRO: ubuntu1804
+
+    # Test other role features.
+    - MOLECULE_DISTRO: ubuntu1804
+      MOLECULE_PLAYBOOK: playbook-http-port.yml
 
 install:
  - pip install molecule docker
 
-before_script:
-  # Use actual Ansible Galaxy role name for the project directory.
-  - cd ../
-  - mv ansible-role-$ROLE_NAME fede2cr.$ROLE_NAME
-  - cd fede2cr.$ROLE_NAME
-
-#script:
-#  - molecule test
+script:
+  - molecule test
 
 notifications:
   webhooks: https://galaxy.ansible.com/api/v1/notifications/
