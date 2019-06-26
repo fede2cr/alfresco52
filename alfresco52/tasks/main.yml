@@ -2,6 +2,9 @@
 # tasks file for alfresco52
 # TODO: Validar resto de puertos de Alfresco, antes y después
 # TODO: Validar logeando usuario, subiendo contenido, bajando contenido, y borrando contenido
+# TODO: mover "hasta que palme tomcat", y comprobación de Alfresco, a handlers
+# TODO: Comprobar servicios con handler
+# TODO: Transformar archivo de opciones en template de jinja con info en inventario. Opcional automatizar mysql/pgsql
 - name: Revisa que no se ejecuten tags que nadie llamo
   fail:
     msg: Nadie llamo a este tag...
@@ -48,15 +51,6 @@
     - python-psutil
   become: yes
   tags: install
-
-# mysql_preupgrade
-# Transformar archivo de opciones en template de jinja con info en inventario. Opcional automatizar mysql/pgsql
-# Verificar uri y ojala logearse antes de apagar alfresco
-# Verificar que variables de usuario y archivos definidas en inventario son validas
-
-# TODO Verificar que en /opt/alfresco_community/solr4/workspace-SpacesStore/conf/solrcore.properties y /opt/alfresco_community/solr4/archive-SpacesStore/conf/solrcore.properties, data.dir.root diga lo mismo
-#sudo cat /opt/alfresco_community/solr4/archive-SpacesStore/conf/solrcore.properties| grep data.dir.root
-#sudo cat /opt/alfresco_community/solr4/workspace-SpacesStore/conf/solrcore.properties| grep data.dir.root
 - name: Revisa que exista alfresco-global.properties según inventario
   stat:
     path: "{{ alf_glob_prop_path }}"
@@ -70,9 +64,6 @@
   become: yes
   register: dir_root_ok
   failed_when: dir_root_ok.changed
-# Probar que funcionan credenciales
-# Probar que existe BD alfresco
-# Stop alfresco
 - name: Detiene Alfresco antes de actualización
   service:
     name: alfresco.service
@@ -91,12 +82,6 @@
     state: absent
   tags: mysql_preupgrade
   become: yes
-
-
-# Verifica que mysql siga arriba
-# Respaldo de datos, y archivos importantes
-#sudo mysqldump -u root -proot alfresco  > alfresco.db
-
 - name: Respalda base de datos Alfresco, y almancena en HOME
   mysql_db:
     login_user: root
@@ -107,7 +92,6 @@
     target: "/{{ ansible_env.HOME }}/alfresco-{{ inventory_hostname }}.sql"
   tags: mysql_preupgrade
   become: yes
-# TODO: Verificar respaldo de Alfresco db, tamaño aprox (al menos 700K), contenido
 - name: Respalda {{ dir_root }} y almancena en HOME
   archive:
     path: "{{ dir_root }}"
@@ -115,7 +99,6 @@
     format: bz2
   tags: mysql_preupgrade
   become: yes
-# TODO: Verificar tamaño y contenido. Al menos 17M
 - name: Respalda {{ alf_root }} y almancena en HOME
   archive:
     path: "{{ alf_root }}"
@@ -123,7 +106,6 @@
     format: bz2
   tags: mysql_preupgrade
   become: yes
-# Respaldo SOLR
 - name: Respalda {{ solr4_root }} y almancena en HOME
   archive:
     path: "{{ alf_root }}"
@@ -131,13 +113,10 @@
     format: bz2
   tags: mysql_preupgrade
   become: yes
-# TODO:Verificar tamaño, al menos 700K
-# TODO: Comprobar que tenemos doble de espacio, de lo que pesa Alfresco
 - name: Mueve el Alfresco original a otro directorio antes de actualizar
   command: mv {{ alf_root }} /opt/alfresco.old
   tags: mysql_preupgrade
   become: yes
-# Borrar basee de datos
 - name: Crea base de datos en MariaDB
   mysql_db:
     name: alfresco
@@ -172,11 +151,6 @@
     enabled: true
   become: yes
   tags: mysql_preupgrade
-
-
-# Crear base de datos (agregar tag, tarea ya existe)
-# Crear usuario con clave predefinida (que cumpla parámetros de seguridad)
-
 - name: Preconfigura contraseñas, en paquete de MariaDB
   debconf:
     name: mariadb-server
@@ -341,22 +315,13 @@
   tags: install
 - name: Espera a que se complete instalador
   pause:
-    seconds: 120
+    seconds: "{{ installer_delay }}"
   tags: install
 - name: Comprobamos servicio de Alfresco por puerto TCP/8080
   uri:
     url: http://localhost:8080/share/
     status_code: 200
   tags: install
-
-# mysql_postinstall
-
-
- #- name: 
-
-# Cambiar dir.root
-# Cambiar dir solr 
-# levantar alf?
 - name: Detiene Alfresco antes de postinstalación
   service:
     name: alfresco.service
@@ -375,8 +340,6 @@
     state: absent
   tags: mysql_postupgrade
   become: yes
-# TODO, mover "hasta que palme tomcat", y comprobación de Alfresco, a handlers
-
 - name: Mueve el dir_root en blanco de la instalación de Alfresco, antes de importar
   command: mv {{ dir_root }} /opt/dir_root.old
   tags: mysql_postupgrade
@@ -395,9 +358,6 @@
     login_unix_socket: /var/run/mysqld/mysqld.sock
   tags: mysql_postupgrade
   become: yes
-  #sudo mysql -u root -p alfresco < alfresco.db 
-#sudo systemctl start alfresco
-
 - name: Levanta Alfresco luego de actualizar
   service:
     name: alfresco.service
@@ -412,15 +372,10 @@
   tags: mysql_postupgrade
 - name: Espera a que se complete instalador
   pause:
-    seconds: 120
+    seconds: "{{ installer_delay }}"
   tags: mysql_postupgrade
 - name: Comprobamos servicio de Alfresco por puerto TCP/8080 luego de actualizar
   uri:
     url: http://localhost:8080/share/
     status_code: 200
   tags: mysql_postupgrade
-
-# TODO: Sincronizar respaldos afuera o disco externo?
-
-# Comprobar servicios con handler
-# Verificar contenido subido anteriormente
