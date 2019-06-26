@@ -51,7 +51,7 @@
     - python3-pymysql
   become: true
   when: database == 'mysql'
-- block:
+- block: # mysql-preupgrade
     - name: Revisa que exista alfresco-global.properties según inventario
       stat:
         path: "{{ alf_glob_prop_path }}"
@@ -144,90 +144,88 @@
         state: restarted
         enabled: true
       become: true
-  when: upgrade == true
-- name: Preconfigura contraseñas, en paquete de MariaDB
-  debconf:
-    name: mariadb-server
-    question: "{{ item }}"
-    value: "root"
-    vtype: password
-  loop:
-    - mysql-server/root_password
-    - mysql-server/root_password_again
-  become: true
-  tags: mysql_install
-- name: Instala paquetes de MariaDB
-  apt:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - mariadb-server
-    - python-pymysql
-  become: true
-  tags:
-    - mysql_install
-    - mysql_preupgrade
-- name: Inicia base de datos
-  service:
-    name: mysql
-    state: started
-    enabled: true
-  become: true
-  ignore_errors: "{{ ansible_check_mode }}"
-  tags: mysql_install
-- name: Configura usuario root de MySQL
-  mysql_user:
-    name: root
-    host: "{{ item }}"
-    login_unix_socket: /var/run/mysqld/mysqld.sock
-    password: "root"
-    priv: '*.*:ALL,GRANT'
-    check_implicit_admin: true
-  loop:
-    - "{{ ansible_hostname }}"
-    - 127.0.0.1
-    - ::1
-    - localhost
-  become: true
-  tags: mysql_install
-- name: Crea base de datos en MariaDB
-  mysql_db:
-    name: alfresco
-    state: present
-    login_user: root
-    login_password: root
-    login_unix_socket: /var/run/mysqld/mysqld.sock
-    encoding: utf8
-  become: true
-  tags:
-    - mysql_install
-    - mysql_preupgrade
-- name: Crea usuario en base de datos MariaDB
-  mysql_user:
-    name: alfresco
-    host: "{{ item }}"
-    password: alfresco
-    state: present
-    priv: 'alfresco.*:ALL'
-    login_user: root
-    login_password: root
-    login_unix_socket: /var/run/mysqld/mysqld.sock
-  loop:
-    - "{{ ansible_hostname }}"
-    - 127.0.0.1
-    - ::1
-    - localhost
-  become: true
-  tags:
-    - mysql_install
-    - mysql_preupgrade
-- name: Reinicia base de datos para aplicar usuario
-  service:
-    name: mysql
-    state: restarted
-    enabled: true
-  become: true
-  tags: mysql_install
+  when: upgrade == true and database == 'mysql'
+
+- block:
+    - name: Preconfigura contraseñas, en paquete de MariaDB
+      debconf:
+        name: mariadb-server
+        question: "{{ item }}"
+        value: "root"
+        vtype: password
+      loop:
+        - mysql-server/root_password
+        - mysql-server/root_password_again
+      become: true
+    - name: Instala paquetes de MariaDB
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - mariadb-server
+        - python-pymysql
+      become: true
+    - name: Inicia base de datos
+      service:
+        name: mysql
+        state: started
+        enabled: true
+      become: true
+      ignore_errors: "{{ ansible_check_mode }}"
+    - name: Configura usuario root de MySQL
+      mysql_user:
+        name: root
+        host: "{{ item }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        password: "root"
+        priv: '*.*:ALL,GRANT'
+        check_implicit_admin: true
+      loop:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+      become: true
+    - name: Crea base de datos en MariaDB
+      mysql_db:
+        name: alfresco
+        state: present
+        login_user: root
+        login_password: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+        encoding: utf8
+      become: true
+    - name: Crea usuario en base de datos MariaDB
+      mysql_user:
+        name: alfresco
+        host: "{{ item }}"
+        password: alfresco
+        state: present
+        priv: 'alfresco.*:ALL'
+        login_user: root
+        login_password: root
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      loop:
+        - "{{ ansible_hostname }}"
+        - 127.0.0.1
+        - ::1
+        - localhost
+      become: true
+    - name: Reinicia base de datos para aplicar usuario
+      service:
+        name: mysql
+        state: restarted
+        enabled: true
+      become: true
+    - name: Copia configuracion para alfresco, usando MySQL
+      copy:
+        src: "{{ role_path }}/files/option-file-mysql.txt"
+        dest: "{{ ansible_env.HOME }}/option-file.txt"
+        mode: 0644
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+  when: database == 'mysql'
+
 - name: Copia configuracion para alfresco, usando PostgreSQL
   copy:
     src: "{{ role_path }}/files/option-file-pgsql.txt"
@@ -235,15 +233,7 @@
     mode: 0644
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
-  tags: pgsql
-- name: Copia configuracion para alfresco, usando MySQL
-  copy:
-    src: "{{ role_path }}/files/option-file-mysql.txt"
-    dest: "{{ ansible_env.HOME }}/option-file.txt"
-    mode: 0644
-    owner: "{{ ansible_user }}"
-    group: "{{ ansible_user }}"
-  tags: mysql
+  when: database == 'pgsql'
 - name: Copia alfresco
   copy:
     src: "{{ role_path }}/files/{{ alfresco_installer }}"

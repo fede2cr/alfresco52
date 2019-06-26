@@ -19,7 +19,7 @@ provisioner:
   inventory:
     group_vars:
       all:
-        # ansible_user: greencore
+        ansible_user: root
         alfresco_installer: alfresco-community-installer-201707-linux-x64.bin
         # vieja
         # alfresco_installer: alfresco-community-installer-201602-linux-x64.bin
